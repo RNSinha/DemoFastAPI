@@ -1,5 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,Request
 from routers import user, sales ,distributors
+from fastapi.responses import JSONResponse
+import logging
 
 app = FastAPI()
 
@@ -11,8 +13,32 @@ app.include_router(distributors.router, prefix="/api/distributors", tags=["Distr
 def read_root():
     return {"Hello": "World"}
 
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger("uvicorn")
 
+@app.get("/")
+def read_root():
+    logger.info("Root endpoint was called")
+    return {"Hello": "World"}
 
+@app.get("/error")
+def trigger_error():
+    logger.info("Triggering an error")
+    raise ValueError("This is a test error")
+
+@app.exception_handler(Exception)
+async def unicorn_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unexpected error occurred: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "message": "Internal Server Error",
+            "detail": str(exc)  # Include the exception message in the response
+        },
+    )
 
 # from fastapi import FastAPI, HTTPException, Depends
 # from passlib.context import CryptContext

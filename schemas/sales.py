@@ -5,7 +5,7 @@ from typing import Optional
 
 class SalesCreate(BaseModel):
     product_name: str
-    quantity: str
+    quantity: int
     price: float
     date: str
 

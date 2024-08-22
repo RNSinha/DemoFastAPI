@@ -8,6 +8,7 @@ from database import user_collection
 from pydantic import EmailStr
 from bson import ObjectId
 
+
 router = APIRouter()
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated = "auto")
@@ -19,7 +20,7 @@ async def get_user(email: EmailStr):
     user = await user_collection.find_one({"email": email})
     if user:
         user["id"] = str(user["_id"])
-        return user(** user)
+        return user   #(** user)
     return None
 
 
@@ -42,7 +43,8 @@ async def signup(user: UserCreate):
 @router.post("/login")
 async def login(user: UserLogin):
     db_user = await get_user(user.email)
-    if not db_user or not pwd_context.verify(user.password, db_user.hashed_password):
+    #if not db_user or not pwd_context.verify(user.password, db_user.hashed_password):
+    if not db_user or not pwd_context.verify(user.password, db_user["hashed_password"]):  # Access dict keys correctly    
         raise HTTPException(status_code=400, detail="Invalid credentials")
     
     return {"message": "Login successful"}
