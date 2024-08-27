@@ -22,6 +22,16 @@ async def get_sales(sales_id: str):
         return Sales(**sales)
     raise HTTPException(status_code=404, detail="Sales record not found")
 
+
+@router.get("/getSaleslist/")
+async def get_saleslist():
+    sales = []
+    async for sale in sales_collection.find():
+        sales.append(sales_helper(sale))
+    
+    return sales 
+  
+
 @router.put("/sales/{sales_id}", response_model=Sales)
 async def update_sales(sales_id: str, sales: SalesUpdate):
     sales_dict = {k: v for k, v in sales.dict().items() if v is not None}
@@ -41,3 +51,14 @@ async def delete_sales(sales_id: str):
     if delete_result.deleted_count == 1:
         return {"message": "Sales record deleted successfully"}
     raise HTTPException(status_code=404, detail="Sales record not found")
+
+
+
+def sales_helper(sale) -> dict:
+    return {
+        "id": str(sale["_id"]),
+        "product_name": sale["product_name"],
+        "quantity": sale["quantity"],
+        "price": sale["price"],
+        "date": sale["date"],    
+    }
